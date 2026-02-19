@@ -1,0 +1,12 @@
+{
+  "name": "og-generator",
+  "version": "1.0.0",
+  "description": "Standalone OG image generator for Bruno",
+  "main": "generate.js",
+  "scripts": {
+    "generate": "node generate.js"
+  },
+  "dependencies": {
+    "puppeteer": "^21.0.0"
+  }
+}

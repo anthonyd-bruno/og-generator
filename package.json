@@ -7,6 +7,6 @@
     "generate": "node generate.js"
   },
   "dependencies": {
-    "puppeteer": "^21.0.0"
+    "puppeteer": "^24.37.5"
   }
 }

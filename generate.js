@@ -1,22 +1,23 @@
-const puppeteer = require('puppeteer');
-const path = require('path');
-const fs = require('fs');
-const readline = require('readline');
+const puppeteer = require("puppeteer");
+const path = require("path");
+const fs = require("fs");
+const readline = require("readline");
 
 // Read the Bruno logo and convert to base64 data URI
-const logoPath = path.join(__dirname, 'bruno-logo.png');
-let logoDataUri = '';
+const logoPath = path.join(__dirname, "bruno-logo.png");
+let logoDataUri = "";
 if (fs.existsSync(logoPath)) {
-  const logoBase64 = fs.readFileSync(logoPath).toString('base64');
+  const logoBase64 = fs.readFileSync(logoPath).toString("base64");
   logoDataUri = `data:image/png;base64,${logoBase64}`;
 }
 
 // Output directory
-const outputDir = path.join(__dirname, 'output');
+const outputDir = path.join(__dirname, "output");
 
 function getStandardTemplate(title, subtitle) {
-  const logoHtml = logoDataUri 
-    ? `<img src="${logoDataUri}" class="logo" />`
+  const logoHtml =
+    logoDataUri ?
+      `<img src="${logoDataUri}" class="logo" />`
     : '<div class="logo-text">Bruno</div>';
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8">
@@ -46,8 +47,9 @@ function getStandardTemplate(title, subtitle) {
 }
 
 function getVideoTemplate(title, subtitle) {
-  const logoHtml = logoDataUri 
-    ? `<img src="${logoDataUri}" class="logo" />`
+  const logoHtml =
+    logoDataUri ?
+      `<img src="${logoDataUri}" class="logo" />`
     : '<div class="logo-text">Bruno</div>';
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8">
@@ -82,7 +84,7 @@ async function generateImage(title, subtitle, filename, type) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
-  const isVideo = type === 'video';
+  const isVideo = type === "video";
   const dimensions = isVideo ? { width: 1280, height: 720 } : { width: 1200, height: 630 };
 
   const browser = await puppeteer.launch({ headless: true });
@@ -90,10 +92,10 @@ async function generateImage(title, subtitle, filename, type) {
   await page.setViewport(dimensions);
 
   const html = isVideo ? getVideoTemplate(title, subtitle) : getStandardTemplate(title, subtitle);
-  await page.setContent(html, { waitUntil: 'domcontentloaded' });
+  await page.setContent(html, { waitUntil: "domcontentloaded" });
 
   const outputPath = path.join(outputDir, `${filename}.png`);
-  await page.screenshot({ path: outputPath, type: 'png' });
+  await page.screenshot({ path: outputPath, type: "png" });
   await browser.close();
 
   const stats = fs.statSync(outputPath);
@@ -103,30 +105,39 @@ async function generateImage(title, subtitle, filename, type) {
 
 function prompt(question) {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  return new Promise(resolve => rl.question(question, answer => { rl.close(); resolve(answer); }));
+  return new Promise((resolve) =>
+    rl.question(question, (answer) => {
+      rl.close();
+      resolve(answer);
+    }),
+  );
 }
 
 async function main() {
-  console.log('\nBruno OG Image Generator\n');
-  
-  const title = await prompt('Title: ');
+  console.log("\nBruno OG Image Generator\n");
+
+  const title = await prompt("Title: ");
   if (!title.trim()) {
-    console.log('Error: Title is required');
+    console.log("Error: Title is required");
     process.exit(1);
   }
-  
-  const subtitle = await prompt('Subtitle (optional): ');
-  const filename = await prompt('Filename (without extension) [og-image]: ');
-  const typeInput = await prompt('Type - standard (1200x630) or video (1280x720) [standard]: ');
-  
-  const type = typeInput.toLowerCase() === 'video' ? 'video' : 'standard';
-  const finalFilename = filename.trim() || 'og-image';
 
-  console.log('\nGenerating image...');
-  await generateImage(title, subtitle || '', finalFilename, type);
+  const subtitle = await prompt("Subtitle (optional): ");
+  const filename = await prompt(
+    `Filename (without extension) [${title.toLowerCase().replace(/\s/g, "-")}${subtitle ? `-${subtitle.toLowerCase().replace(/\s/g, "-")}` : ""}]: `,
+  );
+  const typeInput = await prompt("Type - standard (1200x630) or video (1280x720) [video]: ");
+
+  const type = typeInput.toLowerCase() === "standard" ? "standard" : "video";
+  const finalFilename =
+    filename.trim() ||
+    `${title.toLowerCase().replace(/\s/g, "-")}${subtitle ? `-${subtitle.toLowerCase().replace(/\s/g, "-")}` : ""}`;
+
+  console.log("\nGenerating image...");
+  await generateImage(title, subtitle || "", finalFilename, type);
 }
 
-main().catch(err => {
-  console.error('Error:', err);
+main().catch((err) => {
+  console.error("Error:", err);
   process.exit(1);
 });
